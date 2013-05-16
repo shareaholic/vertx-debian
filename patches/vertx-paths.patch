@@ -5,7 +5,7 @@ Adjust Vert.x paths for running
  APP_HOME="`pwd -P`"
  cd "$SAVED"
  
--CLASSPATH=$APP_HOME/lib/*:$APP_HOME/conf:$JYTHON_HOME/jython.jar::$JRUBY_HOME/lib/jruby.jar
+-CLASSPATH=${CLASSPATH}:${APP_HOME}/lib/*:${APP_HOME}/conf:${JYTHON_HOME}/jython.jar:${JRUBY_HOME}/lib/jruby.jar
 +JRUBY_HOME=/usr/lib/jruby
 +LIBDIR=/usr/share/vertx
 +CONFDIR=/etc/vertx
@@ -14,9 +14,15 @@ Adjust Vert.x paths for running
  
  # Determine the Java command to use to start the JVM.
  if [ -n "$JAVA_HOME" ] ; then
-@@ -164,4 +168,4 @@
+@@ -164,9 +168,5 @@
  }
  eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $VERTX_OPTS
  
--exec "$JAVACMD" "${JVM_OPTS[@]}" -Dvertx.install=$APP_HOME -Djava.util.logging.config.file=$APP_HOME/conf/logging.properties -Djruby.home=$JRUBY_HOME -classpath "$CLASSPATH" org.vertx.java.deploy.impl.cli.Starter "$@"
-+exec "$JAVACMD" "${JVM_OPTS[@]}" -Djava.util.logging.config.file=$CONFDIR/logging.properties -Djruby.home=$JRUBY_HOME -classpath "$CLASSPATH" org.vertx.java.deploy.impl.cli.Starter "$@"
+-exec "$JAVACMD" \
+-    "${JVM_OPTS[@]}" \
+-    -Djava.util.logging.config.file=${VERTX_JUL_CONFIG:-${APP_HOME}/conf/logging.properties} \
+-    -Djruby.home=$JRUBY_HOME \
+-    -classpath "$CLASSPATH" \
+-    org.vertx.java.deploy.impl.cli.Starter "$@"
++exec "$JAVACMD" "${JVM_OPTS[@]}" -Dorg.vertx.logger-delegate-factory-class-name=org.vertx.java.core.logging.impl.SLF4JLogDelegateFactory -Djruby.home=$JRUBY_HOME -classpath "$CLASSPATH" org.vertx.java.deploy.impl.cli.Starter "$@"
++
