@@ -1,36 +1,57 @@
 Adjust Vert.x paths for running
 --- a/bin/vertx
 +++ b/bin/vertx
-@@ -65,7 +65,46 @@
- APP_HOME="`pwd -P`"
- cd "$SAVED"
-
--CLASSPATH=${CLASSPATH}:${APP_HOME}/lib/*:${APP_HOME}/conf:${JYTHON_HOME}/jython.jar:${JRUBY_HOME}/lib/jruby.jar
-+CLASSPATH=/usr/share/vertx/*
+@@ -55,25 +55,52 @@
+     [ -n "$JAVA_HOME" ] && JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
+ fi
+ 
+-# Attempt to set VERTX_HOME
+-# Resolve links: $0 may be a link
+-PRG="$0"
+-# Need this for relative symlinks.
+-while [ -h "$PRG" ] ; do
+-    ls=`ls -ld "$PRG"`
+-    link=`expr "$ls" : '.*-> \(.*\)$'`
+-    if expr "$link" : '/.*' > /dev/null; then
+-        PRG="$link"
++if [ -n "$VERTX_HOME" ] ; then
++	if [ ! -d "$VERTX_HOME" ] ; then
++		die "ERROR: VERTX_HOME is set to an invalid directory: $VERTX_HOME"
++    fi    
++else
++	VERTX_HOME="`pwd -P`"
++fi
 +
 +if [ -n "$VERTX_CONF" ] ; then
 +    if [ -d "$VERTX_CONF" ] ; then
-+        CLASSPATH=$CLASPATH:$VERTX_CONF
-+    else
++        CLASSPATH=${CLASSPATH}:${VERTX_CONF}
+     else
+-        PRG=`dirname "$PRG"`"/$link"
 +        die "ERROR: VERTX_CONF is set to an invalid directory: $VERTX_CONF"
-+    fi
+     fi
+-done
+-SAVED="`pwd`"
+-cd "`dirname \"$PRG\"`/.."
+-VERTX_HOME="`pwd -P`"
+-cd "$SAVED"
++elif [ -d "/etc/vertx/default/" ] ; then
++    CLASSPATH=${CLASSPATH}:/etc/vertx/default/
 +fi
-+
 +
 +if [ -n "$JYTHON_JAR" ] ; then
 +    if [ -x "$JYTHON_JAR" ] ; then
-+        CLASSPATH=$CLASSPATH:$JYTHON_JAR
++        CLASSPATH=${CLASSPATH}:${JYTHON_JAR}
 +    else
 +        die "ERROR: JYTHON_JAR is set to a non-existant file: $JYTHON_JAR"
 +    fi
 +elif [ -x "/usr/share/java/jython.jar" ] ; then
-+    CLASSPATH=$CLASSPATH:/usr/share/java/jython.jar
++    CLASSPATH=${CLASSPATH}:/usr/share/java/jython.jar
 +fi
 +
 +if [ -n "$JRUBY_HOME" ] ; then
 +    if [ -d "$JRUBY_HOME" ] ; then
 +        if [ -x "$JRUBY_HOME/lib/jruby.jar" ] ; then
-+            CLASSPATH=$CLASSPATH:$JRUBY_HOME/lib/jruby.jar
++            CLASSPATH=${CLASSPATH}:${JRUBY_HOME}/lib/jruby.jar
 +            JVM_OPTS=$JVM_OPTS -Djruby.home=$JRUBY_HOME
 +        else
 +            die "ERROR: Cannot find ./lib/jruby.jar in JRUBY_HOME: $JRUBY_HOME"
@@ -39,24 +60,29 @@ Adjust Vert.x paths for running
 +       die "ERROR: JRUBY_HOME is set to and invalid directory: $JRUBY_HOME"
 +    fi
 +elif [ -x "/usr/lib/jruby/lib/jruby.jar" ] ; then
-+    CLASSPATH=$CLASSPATH:/usr/lib/jruby/lib/jruby.jar
++    CLASSPATH=${CLASSPATH}:/usr/lib/jruby/lib/jruby.jar
 +    JVM_OPTS=$JVM_OPTS -Djruby.home=/usr/lib/jruby/
 +fi
 +
-+if [ -d "/etc/vertx/default/" ] ; then
-+    CLASSPATH=$CLASSPATH:/etc/vertx/default/
-+fi
-
++CLASSPATH=${CLASSPATH}:/usr/share/vertx/lib/*
+ 
+-CLASSPATH=${CLASSPATH}:${VERTX_HOME}/conf:${VERTX_HOME}/lib/*
+ 
  # Determine the Java command to use to start the JVM.
  if [ -n "$JAVA_HOME" ] ; then
-@@ -164,9 +203,4 @@
+@@ -171,10 +198,9 @@
+     JVM_OPTS=("$@")
  }
- eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $VERTX_OPTS
-
--exec "$JAVACMD" \
+ eval splitJvmOpts $JVM_OPTS $JAVA_OPTS $JMX_OPTS $VERTX_OPTS
+-
+ exec "$JAVACMD" \
 -    "${JVM_OPTS[@]}" \
--    -Djava.util.logging.config.file=${VERTX_JUL_CONFIG:-${APP_HOME}/conf/logging.properties} \
--    -Djruby.home=$JRUBY_HOME \
+-    -Djava.util.logging.config.file=${VERTX_JUL_CONFIG:-${VERTX_HOME}/conf/logging.properties} \
+-    -Dvertx.home=$VERTX_HOME\
 -    -classpath "$CLASSPATH" \
--    org.vertx.java.deploy.impl.cli.Starter "$@"
-+exec "$JAVACMD" "${JVM_OPTS[@]}" -Dorg.vertx.logger-delegate-factory-class-name=org.vertx.java.core.logging.impl.SLF4JLogDelegateFactory -classpath "$CLASSPATH" org.vertx.java.deploy.impl.cli.Starter "$@"
+-    org.vertx.java.platform.impl.cli.Starter "$@"
++     "${JVM_OPTS[@]}" \
++     -Dorg.vertx.logger-delegate-factory-class-name=org.vertx.java.core.logging.impl.SLF4JLogDelegateFactory \
++     -Dvertx.home=$VERTX_HOME \
++     -classpath "$CLASSPATH" \
++     org.vertx.java.platform.impl.cli.Starter "$@"

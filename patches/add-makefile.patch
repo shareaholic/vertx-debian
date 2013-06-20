@@ -1,12 +1,14 @@
 Add Makefile for simpler installation
 --- /dev/null
 +++ b/Makefile
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,10 @@
 +all:
 +
 +install:
 +	install -D -m755 bin/vertx $(DESTDIR)/usr/bin/vertx
 +	mkdir -p $(DESTDIR)/usr/share/vertx
-+	cp lib/*.jar $(DESTDIR)/usr/share/vertx
++	cp -R ./lib $(DESTDIR)/usr/share/vertx/
++	cp -R ./client/ $(DESTDIR)/usr/share/vertx/
++	cp -R ./api-docs $(DESTDIR)/usr/share/vertx/
 +	mkdir -p $(DESTDIR)/etc/vertx/default
-+	cp conf/* $(DESTDIR)/etc/vertx/default
++	cp -R conf/* $(DESTDIR)/etc/vertx/default
