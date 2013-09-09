@@ -1,12 +1,12 @@
 Source: vert.x
 Section: net
 Priority: optional
-Maintainer: Diego López León <diegoll@itcrowdarg.com>
+Maintainer: John Meyer <jmeyer@shareaholic.com>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.3
 Homepage: http://vertx.io
-Vcs-Git: git://github.com/diega/vertx-debian.git
-Vcs-Browser: https://github.com/diega/vertx-debian
+Vcs-Git: git://github.com/shareaholic/vertx-debian.git
+Vcs-Browser: https://github.com/shareaholic/vertx-debian
 
 Package: vert.x
 Architecture: all
